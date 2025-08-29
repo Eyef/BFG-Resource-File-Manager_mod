@@ -12,7 +12,7 @@ IF YOU ARE A LINUX USER MAKE SURE TO DOWNLOAD AND INSTALL THE MONO PROJECT: http
 Differences from the original BFG Resource File Manager 1.0.7
 =============================================================
 
-- Added scroll bars to the .bimage preview window, allowing you to see the entire images when the programme is running in windowed mode or on a small screen.
+- Added scroll bars to the .bimage preview window, allowing you to see the entire images when this tool is running in windowed mode or on a small screen.
 - Added panel with bimage information (image size in pixels, texture type and format)
 - Extended idwav player functionality (now displays file duration in seconds, file format, number of channels, sample rate, added simple progress bar)
 - Fixed an error that occurred when cancelling file export after selecting a path for saving.
