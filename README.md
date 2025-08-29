@@ -16,7 +16,7 @@ Differences from the original BFG Resource File Manager 1.0.7
 - Added panel with bimage information (image size in pixels, texture type and format)
 - Extended idwav player functionality (now displays file duration in seconds, file format, number of channels, sample rate, added simple progress bar)
 - Fixed an error that occurred when cancelling file export after selecting a path for saving.
-- Added dat preview of font files (48.dat) as a table of characters with their metrics, as well as the number of glyphs in the font, ascender and descender values.
+- Added preview of dat font files (48.dat) as a table of characters with their metrics, as well as the number of glyphs in the font, ascender and descender values.
 - Added Help - About menu item to the main window of the tool, which opens a small window with the version number of this tool, its author and a link to github.
 
 Build it yourself (BIY)
