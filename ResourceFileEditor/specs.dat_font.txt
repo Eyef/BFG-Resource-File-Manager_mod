@@ -1,0 +1,48 @@
+DOOM 3 BFG Edition .dat font specification
+
+|Byte Offset|Size (bytes)|Endianness|Description                               |Notes                                 |
+|-----------|:----------:|:--------:|-----------------------------------------:|-------------------------------------:|
+|0x0        |4           |Big       |Magic number (0x6964662A, "*fdi" in ASCII)|Must be exactly 0x6964662A            |
+|0x4        |2           |Big       |Font size (in points)                     |Unsigned short                        |
+|0x6        |2           |Big       |Ascender value                            |Signed short (baseline to top)        |
+|0x8        |2           |Big       |Descender value                           |Signed short (baseline to bottom)     |
+|0xA        |2           |Big       |Number of glyphs                          |Unsigned short                        |
+|0xC        |10 * n      |Little    |Glyph data array (n entries)              |See Glyph Data Structure below        |
+|0xC+(10*n) |4 * n       |Little    |Character codes array (n entries)         |Unicode code points for each glyph    |
+
+Glyph Data Structure (10 bytes per glyph):
+|Byte Offset|Size (bytes)|Type      |Description                               |Notes                                 |
+|-----------|:----------:|:--------:|-----------------------------------------:|-------------------------------------:|
+|0x0        |1           |Byte      |Glyph width                               |Unsigned                              |
+|0x1        |1           |Byte      |Glyph height                              |Unsigned                              |
+|0x2        |1           |SByte     |Top bearing (from baseline)               |Signed                                |
+|0x3        |1           |SByte     |Left bearing                              |Signed                                |
+|0x4        |1           |Byte      |Horizontal advance (xSkip)                |Unsigned                              |
+|0x5        |1           |Byte      |Padding (reserved)                        |Always 0                              |
+|0x6        |2           |UShort    |S texture coordinate                      |Little-endian                         |
+|0x8        |2           |UShort    |T texture coordinate                      |Little-endian                         |
+
+Notes:
+1. Endianness:
+   - Header (first 12 bytes) is big-endian
+   - Glyph data and character codes are little-endian
+2. Character codes:
+   - Stored as 32-bit Unicode values (though typically fit in 16 bits)
+   - Ordered to match corresponding glyphs in glyph array
+3. Texture coordinates:
+   - (S,T) represent top-left corner of glyph in texture
+   - Texture is typically stored in separate .bimage file
+4. Special values:
+   - Negative descender values are common
+   - Top/left bearings can be negative for proper alignment
+5. Validation:
+   - Glyph count should be reasonable (typically <5000)
+   - Character codes should be valid Unicode values
+   - Width/height values should be non-zero for visible glyphs
+
+Example header (from 48.dat):
+69 64 66 2A - magic (*fdi)
+00 30       - size (48)
+00 2C       - ascender (44)
+FF F5       - descender (-11)
+00 FD       - glyph count (253)
