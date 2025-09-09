@@ -18,6 +18,10 @@ Differences from the original BFG Resource File Manager 1.0.7
 - Fixed an error that occurred when cancelling file export after selecting a path for saving.
 - Added preview of dat font files (48.dat) as a table of characters with their metrics, as well as the number of glyphs in the font, ascender and descender values.
 - Added Help - About menu item to the main window of the tool, which opens a small window with the version number of this tool, its author and a link to github.
+- Fixed critical errors in WAV file headers. Now files with ADPCM, XMA2 and Extensible formats open correctly in sound editors (GoldWave, etc.), thanks to: 
+Addition and correct filling of fact-chunk.
+Precise calculation of chunk sizes and number of samples.
+Format conformity to Microsoft WAVEFORMATEX and RIFF WAVE specifications.
 
 Build it yourself (BIY)
 =======================
