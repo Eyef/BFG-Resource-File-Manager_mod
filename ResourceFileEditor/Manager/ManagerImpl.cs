@@ -356,6 +356,7 @@ namespace ResourceFileEditor.Manager
                         exportedFile = AudioManager.LoadFile(file, out _);
                         file.Position = 0;
                         exportedFile.CopyTo(file);
+                        file.SetLength(exportedFile.Length);
 
                         break;
                     case "bimage":
