@@ -1,31 +1,53 @@
-﻿DOOM 3 BFG Edition .idwav specification
+DOOM 3 BFG Edition .idwav specification
 
-|Byte       |Size                |Swaped|Description                                                                                                   |
-|-----------|:------------------:|:----:|-------------------------------------------------------------------------------------------------------------:|
-|0x0        |4                   | Yes  |The file's "magic" identifier (0x6D7A7274)                                                                    |
-|0x4        |8                   | Yes  |Timestamp                                                                                                     |
-|0x12       |1                   | No   |loaded flag (must be true)                                                                                    |
-|0x13       |4                   | Yes  |xma2's loopBegin shortcut                                                                                     |
-|0x17       |4                   | Yes  |length of the audio                                                                                           |
-|0x21       |WAVEFORMATEX Length | No   |WAVEFORMATEX chunk (check https://docs.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex)   |
-|chunk size |4                   | Yes  |Amplitudes array length                                                                                       |
-|prev + 4   |amplitude num       | No   |Amplitudes array                                                                                              |
-|prev + amps|4                   | Yes  |Total buffer Size                                                                                             |
-|prev + 4   |4                   | Yes  |Buffer array length                                                                                           |
+|Offset     |Size                |Endian |Description                                                                                                   |
+|-----------|:------------------:|:-----:|-------------------------------------------------------------------------------------------------------------:|
+|0x0        |4                   | BE    |The file's "magic" identifier (0x6D7A7274)                                                                    |
+|0x4        |8                   | LE    |Timestamp (Windows FILETIME, 100-ns intervals since 1601-01-01). 0 = null timestamp                           |
+|0xC        |1                   | —     |loaded flag (0 in game files)                                                                                 |
+|0xD        |4                   | BE    |Loop start offset in samples (0 = start of file)                                                              |
+|0x11       |4                   | BE    |Total playable length in samples                                                                              |
+|0x15       |WAVEFORMATEX Length | LE    |WAVEFORMATEX chunk (check https://docs.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex)   |
 
-Unlike amplitudes which is a byte array, the buffer array have entries of the following format
-|Byte             |Size           |Swaped|Description                                       |
-|-----------------|:-------------:|:----:|-------------------------------------------------:|
-|0x0              |4              | Yes  |Number of Buffer samples                          |
-|0x4              |4              | Yes  |Buffer Size                                       |
-|0x8              |buffer size    | No   |Buffer Data                                       |
+WAVEFORMATEX structure (at offset 0x15):
+|Offset     |Size                |Endian |Description                                                                                                   |
+|-----------|:------------------:|:-----:|-------------------------------------------------------------------------------------------------------------:|
+|0x15       |2                   | LE    |wFormatTag (1 = PCM, 2 = MS ADPCM, 0xFFFE = WAVE_EXTENSIBLE, 0x0166 = XMA2)                                   |
+|0x17       |2                   | LE    |nChannels (1 = mono, 2 = stereo)                                                                              |
+|0x19       |4                   | LE    |nSamplesPerSec (Sample rate, e.g. 44100, 22050)                                                               |
+|0x1D       |4                   | LE    |nAvgBytesPerSec (Average bytes per second)                                                                    |
+|0x21       |2                   | LE    |nBlockAlign (Block alignment in bytes)                                                                        |
+|0x23       |2                   | LE    |wBitsPerSample (4 for ADPCM, 16 for PCM)                                                                      |
+|0x25       |2                   | LE    |cbSize (Extra data size: 0 for PCM, 32 for MS ADPCM)                                                          |
 
-On both tables if swaped is 'Yes' it means that the first half and last half of bytes are switched between them.
+If cbSize > 0, extra data follows immediately after WAVEFORMATEX.
+For MS ADPCM: 32 bytes containing codec parameters (coefficients, etc.)
 
-The WAVEFORMATEX chunk and the buffer data are direct copies from the original wave files, the amplitudes are copies of .amp files, for the xma2 format there might be a small
-and very rare chance some buffers to be missing from the original file due to a bug with the play length.
-The idwav supports only the following fomats:
-PCM
-Microsoft's ADPCM
-WAVE EXTENSIBLE
-XMA2
+After WAVEFORMATEX (+ extra data if present):
+|Offset     |Size                |Endian |Description                                                                                                   |
+|-----------|:------------------:|:-----:|-------------------------------------------------------------------------------------------------------------:|
+|varies     |4                   | BE    |amp_count (Amplitude array length in bytes, can be 0)                                                         |
+|varies     |amp_count           | —     |amp_data (Amplitude envelope, 1 byte per 128-sample block, max absolute value normalized to 0-255)            |
+
+For ADPCM files (wFormatTag = 2), the following 5 fields are present:
+|Offset     |Size                |Endian |Description                                                                                                   |
+|-----------|:------------------:|:-----:|-------------------------------------------------------------------------------------------------------------:|
+|varies     |4                   | BE    |total_buffer_size (Size of the ADPCM audio data in bytes)                                                     |
+|varies     |4                   | BE    |buffer_count (Always 1 in game files)                                                                         |
+|varies     |4                   | BE    |total_samples (Total number of decoded PCM samples)                                                           |
+|varies     |4                   | BE    |adpcm_data_size (Duplicate of total_buffer_size)                                                              |
+|varies     |4                   | BE    |unknown_field4 (Varies per file, purpose unknown)                                                             |
+
+For PCM files (wFormatTag = 1), audio data starts immediately after amplitude data.
+
+Audio Data:
+|Format     |Description                                                                                                   |
+|-----------|-------------------------------------------------------------------------------------------------------------:|
+|PCM        |Raw PCM samples (16-bit LE)                                                                                   |
+|MS ADPCM   |Single contiguous block of ADPCM-encoded data. Block size = nBlockAlign bytes. Each block decodes to 128 samples |
+
+Supported formats:
+- PCM (wFormatTag = 1)
+- Microsoft's ADPCM (wFormatTag = 2)
+- WAVE EXTENSIBLE (wFormatTag = 0xFFFE)
+- XMA2 (wFormatTag = 0x0166)
