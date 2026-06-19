@@ -10,35 +10,39 @@ DOOM 3 BFG Edition .idwav specification
 |0x15       |WAVEFORMATEX Length | LE    |WAVEFORMATEX chunk (check https://docs.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex)   |
 
 WAVEFORMATEX structure (at offset 0x15):
+
+For PCM (wFormatTag = 1):
 |Offset     |Size                |Endian |Description                                                                                                   |
 |-----------|:------------------:|:-----:|-------------------------------------------------------------------------------------------------------------:|
-|0x15       |2                   | LE    |wFormatTag (1 = PCM, 2 = MS ADPCM, 0xFFFE = WAVE_EXTENSIBLE, 0x0166 = XMA2)                                   |
+|0x15       |2                   | LE    |wFormatTag (1 = PCM)                                                                                          |
 |0x17       |2                   | LE    |nChannels (1 = mono, 2 = stereo)                                                                              |
 |0x19       |4                   | LE    |nSamplesPerSec (Sample rate, e.g. 44100, 22050)                                                               |
 |0x1D       |4                   | LE    |nAvgBytesPerSec (Average bytes per second)                                                                    |
 |0x21       |2                   | LE    |nBlockAlign (Block alignment in bytes)                                                                        |
-|0x23       |2                   | LE    |wBitsPerSample (4 for ADPCM, 16 for PCM)                                                                      |
-|0x25       |2                   | LE    |cbSize (Extra data size: 0 for PCM, 32 for MS ADPCM)                                                          |
+|0x23       |2                   | LE    |wBitsPerSample (16 for PCM)                                                                                   |
 
-If cbSize > 0, extra data follows immediately after WAVEFORMATEX.
-For MS ADPCM: 32 bytes containing codec parameters (coefficients, etc.)
+For MS ADPCM (wFormatTag = 2):
+|Offset     |Size                |Endian |Description                                                                                                   |
+|-----------|:------------------:|:-----:|-------------------------------------------------------------------------------------------------------------:|
+|0x15       |2                   | LE    |wFormatTag (2 = MS ADPCM)                                                                                     |
+|0x17       |2                   | LE    |nChannels (1 = mono, 2 = stereo)                                                                              |
+|0x19       |4                   | LE    |nSamplesPerSec (Sample rate, e.g. 44100)                                                                      |
+|0x1D       |4                   | LE    |nAvgBytesPerSec (Average bytes per second)                                                                    |
+|0x21       |2                   | LE    |nBlockAlign (Block alignment in bytes)                                                                        |
+|0x23       |2                   | LE    |wBitsPerSample (4 for ADPCM)                                                                                  |
+|0x25       |2                   | LE    |cbSize (32 for MS ADPCM)                                                                                      |
+|0x27       |32                  | —     |Extra data containing codec parameters (coefficients, etc.)                                                   |
 
 After WAVEFORMATEX (+ extra data if present):
 |Offset     |Size                |Endian |Description                                                                                                   |
 |-----------|:------------------:|:-----:|-------------------------------------------------------------------------------------------------------------:|
 |varies     |4                   | BE    |amp_count (Amplitude array length in bytes, can be 0)                                                         |
-|varies     |amp_count           | —     |amp_data (Amplitude envelope, 1 byte per 128-sample block, max absolute value normalized to 0-255)            |
-
-For ADPCM files (wFormatTag = 2), the following 5 fields are present:
-|Offset     |Size                |Endian |Description                                                                                                   |
-|-----------|:------------------:|:-----:|-------------------------------------------------------------------------------------------------------------:|
-|varies     |4                   | BE    |total_buffer_size (Size of the ADPCM audio data in bytes)                                                     |
+|varies     |amp_count           | —     |amp_data (Amplitude envelope, 1 byte per 128-sample block for ADPCM, max absolute value normalized to 0-255)|
+|varies     |4                   | BE    |total_buffer_size (Total size of audio data in bytes)                                                         |
 |varies     |4                   | BE    |buffer_count (Always 1 in game files)                                                                         |
 |varies     |4                   | BE    |total_samples (Total number of decoded PCM samples)                                                           |
-|varies     |4                   | BE    |adpcm_data_size (Duplicate of total_buffer_size)                                                              |
+|varies     |4                   | BE    |audio_data_size (Duplicate of total_buffer_size)                                                              |
 |varies     |4                   | BE    |unknown_field4 (Varies per file, purpose unknown)                                                             |
-
-For PCM files (wFormatTag = 1), audio data starts immediately after amplitude data.
 
 Audio Data:
 |Format     |Description                                                                                                   |
